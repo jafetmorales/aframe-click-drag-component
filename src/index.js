@@ -34,13 +34,20 @@ function someParent(element, lambda) {
   return false;
 }
 
+//JAFET LOOK AT THIS
 function cameraPositionToVec3(camera, vec3) {
 
-  vec3.set(
-    camera.components.position.data.x,
-    camera.components.position.data.y,
-    camera.components.position.data.z
-  );
+
+  // var cameraEl = document.querySelector('#camera');
+  // var worldPos = new THREE.Vector3();
+  vec3.setFromMatrixPosition(camera.object3D.matrixWorld);
+
+  ////COMMENTED OUT BY JAFET
+  // vec3.set(
+  //   camera.components.position.data.x,
+  //   camera.components.position.data.y,
+  //   camera.components.position.data.z
+  // );
 
   forEachParent(camera, element => {
 
@@ -61,7 +68,7 @@ function localToWorld(THREE, threeCamera, vector) {
   return threeCamera.localToWorld(vector);
 }
 
-const {unproject} = (function unprojectFunction() {
+const { unproject } = (function unprojectFunction() {
 
   let initialized = false;
 
@@ -103,7 +110,7 @@ function clientCoordsTo3DCanvasCoords(
   };
 }
 
-const {screenCoordsToDirection} = (function screenCoordsToDirectionFunction() {
+const { screenCoordsToDirection } = (function screenCoordsToDirectionFunction() {
 
   let initialized = false;
 
@@ -120,40 +127,45 @@ const {screenCoordsToDirection} = (function screenCoordsToDirectionFunction() {
   return {
     screenCoordsToDirection(
       THREE,
-      aframeCamera,
-      {x: clientX, y: clientY}
+      aframeCamera, { x: clientX, y: clientY }
     ) {
 
       initialized = initialized || initialize(THREE);
 
       // scale mouse coordinates down to -1 <-> +1
-      const {x: mouseX, y: mouseY} = clientCoordsTo3DCanvasCoords(
+      // const {x: mouseX, y: mouseY} = clientCoordsTo3DCanvasCoords(
+      var { x: mouseX, y: mouseY } = clientCoordsTo3DCanvasCoords(
         clientX, clientY,
         0, 0, // TODO: Replace with canvas position
         window.innerWidth,
         window.innerHeight
       );
 
+      //IF STATEMENT ADDED BY JAFET MORALES
+      if (!isNaN(mouseX)) {
+        mouseX = 0.0
+        mouseY = 0.0
+      }
       mousePosAsVec3.set(mouseX, mouseY, -1);
 
       // apply camera transformation from near-plane of mouse x/y into 3d space
       // NOTE: This should be replaced with THREE code directly once the aframe bug
       // is fixed:
-/*
-      cameraPositionToVec3(aframeCamera, cameraPosAsVec3);
-      const {x, y, z} = new THREE
-       .Vector3(mouseX, mouseY, -1)
-       .unproject(aframeCamera.components.camera.camera)
-       .sub(cameraPosAsVec3)
-       .normalize();
-*/
+      /*
+            cameraPositionToVec3(aframeCamera, cameraPosAsVec3);
+            const {x, y, z} = new THREE
+             .Vector3(mouseX, mouseY, -1)
+             .unproject(aframeCamera.components.camera.camera)
+             .sub(cameraPosAsVec3)
+             .normalize();
+      */
       const projectedVector = unproject(THREE, mousePosAsVec3, aframeCamera);
 
       cameraPositionToVec3(aframeCamera, cameraPosAsVec3);
 
       // Get the unit length direction vector from the camera's position
-      const {x, y, z} = projectedVector.sub(cameraPosAsVec3).normalize();
-      return {x, y, z};
+      const { x, y, z } = projectedVector.sub(cameraPosAsVec3).normalize();
+      return { x, y, z };
     },
   };
 }());
@@ -171,7 +183,7 @@ function rayPlaneIntersection(planeNormal, planeConstant, rayDirection) {
   return rayDirection.multiplyScalar(distanceToPlane);
 }
 
-const {directionToWorldCoords} = (function directionToWorldCoordsFunction() {
+const { directionToWorldCoords } = (function directionToWorldCoordsFunction() {
 
   let initialized = false;
 
@@ -195,8 +207,7 @@ const {directionToWorldCoords} = (function directionToWorldCoordsFunction() {
     directionToWorldCoords(
       THREE,
       aframeCamera,
-      camera,
-      {x: directionX, y: directionY, z: directionZ},
+      camera, { x: directionX, y: directionY, z: directionZ },
       depth
     ) {
 
@@ -213,15 +224,15 @@ const {directionToWorldCoords} = (function directionToWorldCoordsFunction() {
       );
 
       // Reposition back to the camera position
-      const {x, y, z} = newPosition.add(cameraPosAsVec3);
+      const { x, y, z } = newPosition.add(cameraPosAsVec3);
 
-      return {x, y, z};
+      return { x, y, z };
 
     },
   };
 }());
 
-const {selectItem} = (function selectItemFunction() {
+const { selectItem } = (function selectItemFunction() {
 
   let initialized = false;
 
@@ -248,10 +259,9 @@ const {selectItem} = (function selectItemFunction() {
 
       initialized = initialized || initialize(THREE);
 
-      const {x: directionX, y: directionY, z: directionZ} = screenCoordsToDirection(
+      const { x: directionX, y: directionY, z: directionZ } = screenCoordsToDirection(
         THREE,
-        camera,
-        {x: clientX, y: clientY}
+        camera, { x: clientX, y: clientY }
       );
 
       cameraPositionToVec3(camera, cameraPosAsVec3);
@@ -274,14 +284,14 @@ const {selectItem} = (function selectItemFunction() {
         .filter(intersection => !!intersection.object.el)
         // Only keep ones that are visible
         .filter(intersection => intersection.object.parent.visible)
-        // The first element is the closest
-        [0]; // eslint-disable-line no-unexpected-multiline
+      // The first element is the closest
+      [0]; // eslint-disable-line no-unexpected-multiline
 
       if (!intersected) {
         return {};
       }
 
-      const {point, object} = intersected;
+      const { point, object } = intersected;
 
       // Aligned to the world direction of the camera
       // At the specified intersection point
@@ -294,13 +304,14 @@ const {selectItem} = (function selectItemFunction() {
 
       const offset = point.sub(object.getWorldPosition());
 
-      return {depth, offset, element: object.el};
+      return { depth, offset, element: object.el };
 
     },
   };
 }());
 
 function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
+  // function dragItem(THREE, element, offset, camera, depth, mouseInfo, enclosure) { //JAFET ADDED ENCLOSURE PARAMETER
 
   const threeCamera = camera.components.camera.camera;
 
@@ -325,17 +336,17 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
 
   const isChildOfActiveCamera = someParent(element, parent => parent === activeCamera);
 
-  function onMouseMove({clientX, clientY}) {
+  function onMouseMove({ clientX, clientY }) {
+    console.log('Bro: Inside onMouseMove')
 
-    lastMouseInfo = {clientX, clientY};
+    lastMouseInfo = { clientX, clientY };
 
     const direction = screenCoordsToDirection(
       THREE,
-      camera,
-      {x: clientX, y: clientY}
+      camera, { x: clientX, y: clientY }
     );
 
-    const {x, y, z} = directionToWorldCoords(
+    const { x, y, z } = directionToWorldCoords(
       THREE,
       camera,
       camera.components.camera.camera,
@@ -368,7 +379,7 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
     nextRotation.y = THREE.Math.radToDeg(rotationEuler.y);
     nextRotation.z = THREE.Math.radToDeg(rotationEuler.z);
 
-    const nextPosition = {x: x - offsetVector.x, y: y - offsetVector.y, z: z - offsetVector.z};
+    const nextPosition = { x: x - offsetVector.x, y: y - offsetVector.y, z: z - offsetVector.z };
 
     // When the element has parents, we need to convert its new world position
     // into new local position of its parent element
@@ -385,40 +396,64 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
       nextPosition.z = offsetVector.z;
     }
 
-    element.emit(DRAG_MOVE_EVENT, {nextPosition, nextRotation, clientX, clientY});
+    console.log('Bro: Emitting DRAG_MOVE_EVENT')
+    element.emit(DRAG_MOVE_EVENT, { nextPosition, nextRotation, clientX, clientY });
 
     element.setAttribute('position', nextPosition);
 
+    var oldRotation = element.getAttribute('rotation')
+    nextRotation.x = oldRotation.x
+    nextRotation.z = oldRotation.z
     element.setAttribute('rotation', nextRotation);
   }
 
-  function onTouchMove({changedTouches: [touchInfo]}) {
+  function onTouchMove({ changedTouches: [touchInfo] }) {
+    console.log('Bro: inside onTouchMove')
     onMouseMove(touchInfo);
   }
 
-  function onCameraChange({detail}) {
+  function onCameraChange({ detail }) {
+    // console.log('Bro: inside onCameraChange')
+    // console.log(detail.name)
+    // console.log(!deepEqual(detail.oldData, detail.newData))
+
     if (
-      (detail.name === 'position' || detail.name === 'rotation')
-      && !deepEqual(detail.oldData, detail.newData)
+      (detail.name === 'position' || detail.name === 'rotation') &&
+      !deepEqual(detail.oldData, detail.newData)
     ) {
       onMouseMove(lastMouseInfo);
     }
   }
 
+  console.log('Bro: am adding the listeners right now')
+
+  // console.log('Bro: enclosure where you deal with listeners is:')
+  // console.log(enclosure)
+  console.log('Bro: camera where you deal with listeners is:')
+  console.log(camera)
+
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('touchmove', onTouchMove);
   camera.addEventListener('componentchanged', onCameraChange);
+  // enclosure.addEventListener('componentchanged', onMouseMove);
 
   // The "unlisten" function
   return _ => {
+
+    console.log("Bro: The listeners are being removed")
+    // document.querySelector('#cursio').components['orient-character'].play()
+    // document.querySelector('#cursio').components.raycaster.init()
+    document.querySelector('#cursio').setAttribute('orient-character', 'active:true') //ADDED BY JAFET
+
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('touchmove', onTouchMove);
     camera.removeEventListener('componentchanged', onCameraChange);
+    // enclosure.removeEventListener('componentchanged', onMouseMove);
   };
 }
 
 // Closure to close over the removal of the event listeners
-const {didMount, didUnmount} = (function getDidMountAndUnmount() {
+const { didMount, didUnmount } = (function getDidMountAndUnmount() {
 
   let removeClickListeners;
   let removeDragListeners;
@@ -433,6 +468,8 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
     let draggedElement;
     let dragInfo;
     const positionLog = [];
+    // let enclosure; //ADDED BY JAFET
+
 
     function cleanUpPositionLog() {
       const now = performance.now();
@@ -442,8 +479,12 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
       }
     }
 
-    function onDragged({detail: {nextPosition}}) {
+    function onDragged({ detail: { nextPosition } }) {
       // Continuously clean up so we don't get huge logs built up
+      console.log('Bro: onDragged being called')
+      // document.querySelector('#cursio').components.raycaster.pause() //JAFET ADDED THIS LINE
+      // document.querySelector('#cursio').setAttribute('orient-character','active:false')//ADDED BY JAFET
+
       cleanUpPositionLog();
       positionLog.push({
         position: Object.assign({}, nextPosition),
@@ -451,11 +492,22 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
       });
     }
 
-    function onMouseDown({clientX, clientY}) {
+    function onMouseDown({ clientX, clientY }) {
 
-      const {depth, offset, element} = selectItem(THREE, componentName, camera, clientX, clientY);
+      console.log('Bro: onmousedown being called')
+      console.log(clientX)
+      console.log(clientY)
 
+      //JAFET: THIS RETURNS AN UNDEFINED ELEMENT ALWAYS AFTER THE USER HAS CHANGED LOCATION
+      // window.AFRAME.scenes[0].camera.el.flushToDOM()
+      // camera = window.AFRAME.scenes[0].camera.el;
+      // const { depth, offset, element } = selectItem(window.AFRAME.THREE, componentName, camera, clientX, clientY);
+      const { depth, offset, element } = selectItem(THREE, componentName, camera, clientX, clientY);
+
+      console.log('Bro element selected is:')
+      console.log(element)
       if (element) {
+        document.querySelector('#cursio').setAttribute('orient-character', 'active:false') //ADDED BY JAFET
         // Can only drag one item at a time, so no need to check if any
         // listener is already set up
         let removeDragItemListeners = dragItem(
@@ -463,22 +515,23 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
           element,
           offset,
           camera,
-          depth,
-          {
+          depth, {
             clientX,
             clientY,
-          }
+          } //,
+          // enclosure //JAFET ADDED THIS PARAMETER
         );
 
         draggedElement = element;
 
         dragInfo = {
-          offset: {x: offset.x, y: offset.y, z: offset.z},
+          offset: { x: offset.x, y: offset.y, z: offset.z },
           depth,
           clientX,
           clientY,
         };
 
+        console.log('Bro: adding DRAG_MOVE_EVENT listener')
         element.addEventListener(DRAG_MOVE_EVENT, onDragged);
 
         removeDragListeners = _ => {
@@ -490,6 +543,7 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
         };
 
         element.emit(DRAG_START_EVENT, dragInfo);
+
       }
     }
 
@@ -510,7 +564,7 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
       };
     }
 
-    function onMouseUp({clientX, clientY}) {
+    function onMouseUp({ clientX, clientY }) {
 
       if (!draggedElement) {
         return;
@@ -520,26 +574,35 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
 
       const velocity = calculateVelocity();
 
+
+
       draggedElement.emit(
         DRAG_END_EVENT,
-        Object.assign({}, dragInfo, {clientX, clientY, velocity})
+        Object.assign({}, dragInfo, { clientX, clientY, velocity })
       );
+
+
 
       removeDragListeners && removeDragListeners(); // eslint-disable-line no-unused-expressions
       removeDragListeners = undefined;
     }
 
-    function onTouchStart({changedTouches: [touchInfo]}) {
+    function onTouchStart({ changedTouches: [touchInfo] }) {
       onMouseDown(touchInfo);
     }
 
-    function onTouchEnd({changedTouches: [touchInfo]}) {
+    function onTouchEnd({ changedTouches: [touchInfo] }) {
       onMouseUp(touchInfo);
     }
 
     function run() {
 
+      console.log('Bro: adding listeners')
+
       camera = scene.camera.el;
+      // enclosure = document.getElementById('enclosure') //ADDED BY JAFET
+      // console.log('Bro: enclosure at run is:')
+      // console.log(enclosure)
 
       // TODO: Attach to canvas?
       document.addEventListener('mousedown', onMouseDown);
@@ -560,7 +623,8 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
 
     if (scene.hasLoaded) {
       run();
-    } else {
+    }
+    else {
       scene.addEventListener('loaded', run);
     }
 
@@ -584,6 +648,8 @@ const {didMount, didUnmount} = (function getDidMountAndUnmount() {
     },
 
     didUnmount(element) {
+
+      // console.log("Bro am UNMOUNTING THE DRAGGABLE COMPONENT")
 
       const cacheIndex = cache.indexOf(element);
 
@@ -632,7 +698,7 @@ export default function aframeDraggableComponent(aframe, componentName = COMPONE
      *
      * @param oldData
      */
-    update() { },
+    update() {},
 
     /**
      * Called when a component is removed (e.g., via removeAttribute).
