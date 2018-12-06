@@ -338,6 +338,8 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
 
   function onMouseMove({ clientX, clientY }) {
     console.log('Bro: Inside onMouseMove')
+    console.log(clientX)
+    console.log(clientY)
 
     lastMouseInfo = { clientX, clientY };
 
@@ -432,6 +434,14 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
   console.log('Bro: camera where you deal with listeners is:')
   console.log(camera)
 
+
+  function playerMovementListener(event) {
+    onMouseMove({ clientX: 525, clientY: 328 });
+  }
+
+  // document.querySelector('[character-animation]').addEventListener('componentchanged', playerMovementListener);
+  document.querySelector('#enclosure').addEventListener('componentchanged', playerMovementListener);
+  // document.addEventListener('mousemove', playerMovementListener);
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('touchmove', onTouchMove);
   camera.addEventListener('componentchanged', onCameraChange);
@@ -445,6 +455,9 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
     // document.querySelector('#cursio').components.raycaster.init()
     document.querySelector('#cursio').setAttribute('orient-character', 'active:true') //ADDED BY JAFET
 
+    // document.querySelector('[character-animation]').removeEventListener('componentchanged', playerMovementListener);
+    document.querySelector('#enclosure').removeEventListener('componentchanged', playerMovementListener);
+    document.removeEventListener('mousemove', playerMovementListener);
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('touchmove', onTouchMove);
     camera.removeEventListener('componentchanged', onCameraChange);
@@ -507,6 +520,8 @@ const { didMount, didUnmount } = (function getDidMountAndUnmount() {
       console.log('Bro element selected is:')
       console.log(element)
       if (element) {
+        //JAFET HERE YOU SET THE ELEMENT TO BE MOVED
+
         document.querySelector('#cursio').setAttribute('orient-character', 'active:false') //ADDED BY JAFET
         // Can only drag one item at a time, so no need to check if any
         // listener is already set up
@@ -542,6 +557,9 @@ const { didMount, didUnmount } = (function getDidMountAndUnmount() {
           removeDragItemListeners = null;
         };
 
+
+        window.theElement = element //ADDED BY JAFET
+        window.theDragInfo = dragInfo //ADDED BY JAFET
         element.emit(DRAG_START_EVENT, dragInfo);
 
       }
@@ -722,6 +740,13 @@ export default function aframeDraggableComponent(aframe, componentName = COMPONE
      */
     play() {
       didMount(this, THREE, componentName);
-    },
+    }
+    // ,tick() {
+    //   // console.log('Bro: draggable is ticking!')
+    //   console.log('Bro: Emitting DRAG_MOVE_EVENT')
+    //   if (!isNaN(window.theElement)) {
+    //     onMouseMove({ 1, 1 })
+    //   }
+    // }
   });
 }
