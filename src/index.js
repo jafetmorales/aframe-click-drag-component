@@ -337,9 +337,20 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
   const isChildOfActiveCamera = someParent(element, parent => parent === activeCamera);
 
   function onMouseMove({ clientX, clientY }) {
-    console.log('Bro: Inside onMouseMove')
-    console.log(clientX)
-    console.log(clientY)
+    
+    //     document.querySelector('#enclosure').removeEventListener('componentchanged', playerMovementListener);
+    // // document.removeEventListener('mousemove', playerMovementListener);
+    // console.log("The change has been made bro!!!")
+    // document.removeEventListener('mousemove', onMouseMove);
+    // document.removeEventListener('touchmove', onTouchMove);
+    // camera.removeEventListener('componentchanged', onCameraChange);
+
+    
+    
+    
+    // console.log('Bro: Inside onMouseMove')
+    // console.log(clientX)
+    // console.log(clientY)
 
     lastMouseInfo = { clientX, clientY };
 
@@ -398,11 +409,9 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
       nextPosition.z = offsetVector.z;
     }
 
-    console.log('Bro: Emitting DRAG_MOVE_EVENT')
+    // console.log('Bro: Emitting DRAG_MOVE_EVENT')
     element.emit(DRAG_MOVE_EVENT, { nextPosition, nextRotation, clientX, clientY });
-
     element.setAttribute('position', nextPosition);
-
     var oldRotation = element.getAttribute('rotation')
     nextRotation.x = oldRotation.x
     nextRotation.z = oldRotation.z
@@ -445,7 +454,6 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('touchmove', onTouchMove);
   camera.addEventListener('componentchanged', onCameraChange);
-  // enclosure.addEventListener('componentchanged', onMouseMove);
 
   // The "unlisten" function
   return _ => {
@@ -457,11 +465,11 @@ function dragItem(THREE, element, offset, camera, depth, mouseInfo) {
 
     // document.querySelector('[character-animation]').removeEventListener('componentchanged', playerMovementListener);
     document.querySelector('#enclosure').removeEventListener('componentchanged', playerMovementListener);
-    document.removeEventListener('mousemove', playerMovementListener);
+    // document.removeEventListener('mousemove', playerMovementListener);
+    console.log("The change has been made bro!!!")
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('touchmove', onTouchMove);
     camera.removeEventListener('componentchanged', onCameraChange);
-    // enclosure.removeEventListener('componentchanged', onMouseMove);
   };
 }
 
@@ -584,16 +592,14 @@ const { didMount, didUnmount } = (function getDidMountAndUnmount() {
 
     function onMouseUp({ clientX, clientY }) {
 
+      console.log('onMouseUp was detected')
       if (!draggedElement) {
+        console.log('INSIDE THE IF')
         return;
       }
 
       cleanUpPositionLog();
-
       const velocity = calculateVelocity();
-
-
-
       draggedElement.emit(
         DRAG_END_EVENT,
         Object.assign({}, dragInfo, { clientX, clientY, velocity })
@@ -610,6 +616,7 @@ const { didMount, didUnmount } = (function getDidMountAndUnmount() {
     }
 
     function onTouchEnd({ changedTouches: [touchInfo] }) {
+      console.log('onTouchEnd being accessed bro')
       onMouseUp(touchInfo);
     }
 
@@ -630,6 +637,8 @@ const { didMount, didUnmount } = (function getDidMountAndUnmount() {
       document.addEventListener('touchend', onTouchEnd);
 
       removeClickListeners = _ => {
+        
+        console.log('Bro removing the mouseup listener and others')
         document.removeEventListener('mousedown', onMouseDown);
         document.removeEventListener('mouseup', onMouseUp);
 
@@ -649,6 +658,7 @@ const { didMount, didUnmount } = (function getDidMountAndUnmount() {
   }
 
   function tearDown() {
+    console.log('tearing down the whole thing')
     removeClickListeners && removeClickListeners(); // eslint-disable-line no-unused-expressions
     removeClickListeners = undefined;
   }
