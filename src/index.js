@@ -287,7 +287,11 @@ const { selectItem } = (function selectItemFunction() {
       // The first element is the closest
       [0]; // eslint-disable-line no-unexpected-multiline
 
-      if (!intersected) {
+
+      // console.log('intersected is')
+      // console.log(intersected)
+      ////JAFET MODIFIED SO THAT A MENU IS BEING INTERSECTED THEN YOU IGNORE ANY INTERSECTIONS AND JUST RETURN
+      if (!intersected || intersected.el.id=="themenu") {
         return {};
       }
 
