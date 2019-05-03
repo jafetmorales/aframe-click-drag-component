@@ -283,17 +283,21 @@ const { selectItem } = (function selectItemFunction() {
         // Only keep intersections against objects that have a reference to an entity.
         .filter(intersection => !!intersection.object.el)
         // Only keep ones that are visible
-        .filter(intersection => intersection.object.parent.visible)
+        .filter(intersection => intersection.object.parent.visible)[0];
       // The first element is the closest
-      [0]; // eslint-disable-line no-unexpected-multiline
+       // eslint-disable-line no-unexpected-multiline
 
 
-      // console.log('intersected is')
-      // console.log(intersected)
+      console.log('intersected is')
+      console.log(intersected)
       ////JAFET MODIFIED SO THAT A MENU IS BEING INTERSECTED THEN YOU IGNORE ANY INTERSECTIONS AND JUST RETURN
-      if (!intersected || intersected.el.id=="themenu") {
+      if (!intersected || intersected.object.el.id == "themenu") {
         return {};
       }
+      // else if(intersected.object.el.id=="themenu")
+      // {
+      //   return {};
+      // }
 
       const { point, object } = intersected;
 
