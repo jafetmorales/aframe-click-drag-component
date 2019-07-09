@@ -288,7 +288,7 @@ const { selectItem } = (function selectItemFunction() {
        // eslint-disable-line no-unexpected-multiline
 
       ////JAFET MODIFIED SO THAT A MENU IS BEING INTERSECTED THEN YOU IGNORE ANY INTERSECTIONS AND JUST RETURN
-      if (!intersected || intersected.object.el.id == "themenu") {
+      if (!intersected || intersected.object.el.id == "newButton") {
         return {};
       }
       // else if(intersected.object.el.id=="themenu")
